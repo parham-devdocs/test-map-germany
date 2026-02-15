@@ -77,7 +77,7 @@ function App() {
           ))}
         </MapContainer>
       </div>
-      <StationsList stations={data} />
+      <StationsList stations={data} onFilterChange={(e)=>{console.log(e)}}/>
     </div>
   );
 }

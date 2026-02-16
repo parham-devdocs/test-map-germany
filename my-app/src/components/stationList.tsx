@@ -1,36 +1,24 @@
-// components/StationsList.tsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Station } from '../types';
 import Loading from './loading';
 
 interface StationsListProps {
   stations: Station[];
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
   loading?: boolean;
   error?: string | null;
-  onStationClick?: (station: Station) => void;
-  onFilterChange?: (filteredStations: Station[]) => void; 
+  onStationClick: (station: Station[]) => void;
 }
 
 const StationsList = ({
-  stations,
   loading = false,
   error = null,
+  searchTerm,
+  onSearchChange,
   onStationClick,
-  onFilterChange, 
+  stations,
 }: StationsListProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Filter stations based on search term
-  const filteredStations = stations.filter((station) =>
-    station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    station.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  useEffect(() => {
-    if (onFilterChange) {
-      onFilterChange(filteredStations);
-    }
-  }, [filteredStations, onFilterChange]);
 
   if (loading) {
     return (
@@ -53,7 +41,7 @@ const StationsList = ({
     );
   }
 
-  if (filteredStations.length === 0) {
+  if (stations.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-md p-12 text-center">
@@ -83,12 +71,12 @@ const StationsList = ({
             type="text"
             placeholder="🔍 Search stations or cities..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all text-lg"
           />
           {searchTerm && (
             <button
-              onClick={() => setSearchTerm('')}
+              onClick={() => onSearchChange('')}
               className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,14 +92,12 @@ const StationsList = ({
         <div className="flex justify-between items-center">
           <div>
             <p className="text-lg opacity-90">Showing Results</p>
-            <p className="text-3xl font-bold">
-              {filteredStations.length} / {stations.length}
-            </p>
+            <p className="text-3xl font-bold">{stations.length}</p>
           </div>
           <div className="text-right">
             <p className="text-lg opacity-90">Cities</p>
             <p className="text-3xl font-bold">
-              {new Set(filteredStations.map(s => s.city)).size}
+              {new Set(stations.map((s) => s.city)).size}
             </p>
           </div>
         </div>
@@ -119,7 +105,7 @@ const StationsList = ({
 
       {/* Stations Grid */}
       <div className="space-y-4">
-        {filteredStations.map((station) => (
+        {stations.map((station) => (
           <div
             key={station.id}
             className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
@@ -143,7 +129,7 @@ const StationsList = ({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="text-right hidden md:block">
                     <div className="text-sm text-gray-600 mb-1">Coordinates</div>
@@ -156,11 +142,12 @@ const StationsList = ({
                       </span>
                     </div>
                   </div>
-                  
+
                   <button
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                       e.stopPropagation();
-                      onStationClick?.(station);
+                      onStationClick([station]);
+                      window.scrollTo(0, 0);
                     }}
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-105 shadow-md"
                   >
@@ -179,8 +166,7 @@ const StationsList = ({
       {/* Footer */}
       <div className="mt-8 text-center text-gray-600">
         <p className="text-lg">
-          Showing <span className="font-bold text-blue-600">{filteredStations.length}</span> of{' '}
-          <span className="font-bold text-blue-600">{stations.length}</span> stations
+          Showing <span className="font-bold text-blue-600">{stations.length}</span> stations
         </p>
       </div>
     </div>

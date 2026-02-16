@@ -1,5 +1,3 @@
-// App.jsx
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 import useFetch from "./hooks/useFetch";
@@ -8,22 +6,40 @@ import { Station } from "./types";
 import StationsList from "./components/stationList";
 import Header from "./components/header";
 import countTotalCities from "./utils/counntUniqueCities";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Map from "./components/map";
+import useStation from "./zustand/store";
 
 const API_URL =
   "https://gist.githubusercontent.com/neysidev/bbd40032f0f4e167a1e6a8b3e99a490c/raw/fc7dc242f41393845d90edaa99e32e28f1ddfe24/train-stations.json";
 
 function App() {
-  const { data: fetchedData, loading, error } = useFetch<Station[]>(API_URL);
-  const [data, setData] = useState<Station[]>([]);
+  const { data, loading, error } = useFetch<Station[]>(API_URL);
+  const setStations = useStation((state) => state.setStations);
+  const stations = useStation((state) => state.stations);
+
+  // ✅ Move search state and filtering logic here
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState<Station[]>([]);
 
   useEffect(() => {
-    if (fetchedData) {
-      setData(fetchedData);
+    if (data) {
+      setStations(data);
     }
-  }, [fetchedData]);
+  }, [data]);
 
-  const totalCities = countTotalCities(data);
+  // ✅ Filter stations when searchTerm or stations change
+  useEffect(() => {
+    if (!stations) return;
+    const filtered = stations.filter(
+      (station) =>
+        station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        station.city.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [stations, searchTerm]);
+
+  const totalCities = countTotalCities(stations);
 
   if (loading) {
     return (
@@ -41,7 +57,7 @@ function App() {
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!stations || stations.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="text-gray-600 text-lg">No stations found</div>
@@ -49,35 +65,23 @@ function App() {
     );
   }
 
-  const defaultCenter = [data[0].lat, data[0].lng] as [number, number];
+  const defaultCenter = [stations[0].lat, stations[0].lng] as [number, number];
 
   return (
     <div className="flex flex-col items-center justify-center bg-gray-100 py-5">
-      <Header stationCount={data.length} cityCount={totalCities} />
+      <Header stationCount={stations.length} cityCount={totalCities} />
 
-      <div className="w-[500px] h-[500px] rounded-lg shadow-lg overflow-hidden">
-        <MapContainer
-          center={defaultCenter}
-          zoom={12}
-          scrollWheelZoom={true}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+      <Map defaultCenter={defaultCenter} stations={filteredData} />
 
-          {data.map((station) => (
-            <Marker key={station.id} position={[station.lat, station.lng]}>
-              <Popup>
-                <div className="font-medium">{station.name}</div>
-                <div className="text-sm text-gray-600">{station.city}</div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </div>
-      <StationsList stations={data} onFilterChange={(e)=>{console.log(e)}}/>
+      <StationsList
+        stations={filteredData} // ✅ Pass filtered data
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onStationClick={(station) => {
+          setFilteredData(station);
+          window.scrollTo(0, 0);
+        }}
+      />
     </div>
   );
 }

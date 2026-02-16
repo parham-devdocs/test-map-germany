@@ -37,4 +37,3 @@ When deploying this application (e.g., to Vercel or Netlify), you may notice tha
 **Cause:**
 This is a known issue with `react-leaflet` and Webpack/Vite bundlers. The default Leaflet CSS references image assets (`marker-icon.png`, `marker-shadow.png`) that are not automatically copied to the build output folder during production builds. Consequently, the browser cannot find the images and displays the alt text or a broken icon instead.
 
-The project is configured for easy deployment on platforms like Vercel. Simply connect your Git repository, and the platform will detect the Vite build settings automatically. Remember to apply the marker icon fix mentioned above before pushing to production.

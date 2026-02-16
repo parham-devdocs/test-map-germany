@@ -5,7 +5,7 @@ import { Station } from '../types'
 
 const Map = ({stations,defaultCenter}:{stations:Station[],defaultCenter:any}) => {
   return (
-    <div className="w-[500px] h-[500px] rounded-lg shadow-lg overflow-hidden">
+    <div className=" w-full h-[500px] border-blue-500 border-2 rounded-lg shadow-lg overflow-hidden">
     <MapContainer
       center={defaultCenter}
       zoom={12}

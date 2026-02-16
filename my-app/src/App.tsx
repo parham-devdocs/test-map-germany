@@ -43,7 +43,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center w-[500px] h-[500px]  justify-center min-h-screen bg-gray-100">
         <Loading />
       </div>
     );
@@ -68,20 +68,23 @@ function App() {
   const defaultCenter = [stations[0].lat, stations[0].lng] as [number, number];
 
   return (
-    <div className="flex flex-col items-center justify-center bg-gray-100 py-5">
+    <div className="flex flex-col gap-5 items-center justify-center bg-gray-100 py-5">
+      <div className=" w-[700px] flex flex-col items-center">
       <Header stationCount={stations.length} cityCount={totalCities} />
 
-      <Map defaultCenter={defaultCenter} stations={filteredData} />
+<Map defaultCenter={defaultCenter} stations={filteredData} />
 
-      <StationsList
-        stations={filteredData} // ✅ Pass filtered data
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onStationClick={(station) => {
-          setFilteredData(station);
-          window.scrollTo(0, 0);
-        }}
-      />
+<StationsList
+  stations={filteredData} // ✅ Pass filtered data
+  searchTerm={searchTerm}
+  onSearchChange={setSearchTerm}
+  onStationClick={(station) => {
+    setFilteredData(station);
+    window.scrollTo(0, 0);
+  }}
+/>
+      </div>
+     
     </div>
   );
 }
